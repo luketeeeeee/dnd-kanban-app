@@ -3,7 +3,15 @@ import { createPortal } from "react-dom";
 import PlusIcon from "../icons/PlusIcon";
 import { Column, Id } from "../types";
 import ColumnContainer from "./ColumnContainer";
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from "@dnd-kit/core";
+import {
+	DndContext,
+	DragEndEvent,
+	DragOverlay,
+	DragStartEvent,
+	PointerSensor,
+	useSensor,
+	useSensors,
+} from "@dnd-kit/core";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 
 function KanbanBoard() {
@@ -11,8 +19,16 @@ function KanbanBoard() {
 	const columnsId = useMemo(() => columns.map((column) => column.id), [columns]);
 	const [activeColumn, setActiveColumn] = useState<Column | null>(null);
 
-	console.log(columns);
+	// pelo que eu entendi isso permite diferenciar um click normal de um drag
+	const sensors = useSensors(
+		useSensor(PointerSensor, {
+			activationConstraint: {
+				distance: 3,
+			},
+		})
+	);
 
+	// FUNÇÕES DE CRUD
 	function createNewColumn() {
 		const columnToAdd: Column = {
 			id: Math.floor(Math.random() * 10001),
@@ -27,6 +43,7 @@ function KanbanBoard() {
 		setColumns(filteredColumn);
 	}
 
+	// FUNÇÕES PARA DRAG AND DROP
 	function onDragStart(event: DragStartEvent) {
 		if (event.active.data.current?.type === "Column") {
 			setActiveColumn(event.active.data.current.column);
@@ -58,7 +75,7 @@ function KanbanBoard() {
 	return (
 		<div className="m-auto flex min-h-screen w-full items-center overflow-x-auto overflow-y-hidden px-[40px]">
 			{/* envolve toda a parte de dnd com o DndContext */}
-			<DndContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+			<DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
 				<div className="m-auto flex gap-4">
 					<div className="flex gap-4">
 						{/* envolve o mapping das colunas com o SortableContext */}
