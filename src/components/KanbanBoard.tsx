@@ -43,6 +43,15 @@ function KanbanBoard() {
 		setColumns(filteredColumn);
 	}
 
+	function updateColumn(id: Id, title: string) {
+		const newColumns = columns.map((column) => {
+			if (column.id !== id) return column;
+			return { ...column, title };
+		});
+
+		setColumns(newColumns);
+	}
+
 	// FUNÇÕES PARA DRAG AND DROP
 	function onDragStart(event: DragStartEvent) {
 		if (event.active.data.current?.type === "Column") {
@@ -87,6 +96,7 @@ function KanbanBoard() {
 									key={column.id}
 									column={column}
 									deleteColumn={deleteColumn}
+									updateColumn={updateColumn}
 								/>
 							))}
 						</SortableContext>
@@ -104,7 +114,11 @@ function KanbanBoard() {
 				{createPortal(
 					<DragOverlay>
 						{activeColumn && (
-							<ColumnContainer column={activeColumn} deleteColumn={deleteColumn} />
+							<ColumnContainer
+								column={activeColumn}
+								deleteColumn={deleteColumn}
+								updateColumn={updateColumn}
+							/>
 						)}
 					</DragOverlay>,
 					document.body
