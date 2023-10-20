@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import PlusIcon from "../icons/PlusIcon";
-import { Column, Id } from "../types";
+import { Column, Id, Task } from "../types";
 import ColumnContainer from "./ColumnContainer";
 import {
 	DndContext,
@@ -18,6 +18,7 @@ function KanbanBoard() {
 	const [columns, setColumns] = useState<Column[]>([]);
 	const columnsId = useMemo(() => columns.map((column) => column.id), [columns]);
 	const [activeColumn, setActiveColumn] = useState<Column | null>(null);
+	const [tasks, setTasks] = useState<Task[]>([]);
 
 	// pelo que eu entendi isso permite diferenciar um click normal de um drag
 	const sensors = useSensors(
@@ -28,7 +29,7 @@ function KanbanBoard() {
 		})
 	);
 
-	// FUNÇÕES DE CRUD
+	// FUNÇÕES DE CRUD COLUMNS
 	function createNewColumn() {
 		const columnToAdd: Column = {
 			id: Math.floor(Math.random() * 10001),
@@ -50,6 +51,22 @@ function KanbanBoard() {
 		});
 
 		setColumns(newColumns);
+	}
+
+	// FUNÇÕES DE CRUD TASKS
+	function createTask(columnId: Id) {
+		const newTask: Task = {
+			id: Math.floor(Math.random() * 10001),
+			columnId,
+			content: `Task ${tasks.length + 1}`,
+		};
+
+		setTasks([...tasks, newTask]);
+	}
+
+	function deleteTask(id: Id) {
+		const newTasks = tasks.filter((task) => task.id !== id);
+		setTasks(newTasks);
 	}
 
 	// FUNÇÕES PARA DRAG AND DROP
@@ -97,6 +114,10 @@ function KanbanBoard() {
 									column={column}
 									deleteColumn={deleteColumn}
 									updateColumn={updateColumn}
+									// uma melhor forma de filtrar as tasks por cada coluna
+									tasks={tasks.filter((task) => task.columnId === column.id)}
+									createTask={createTask}
+									deleteTask={deleteTask}
 								/>
 							))}
 						</SortableContext>
@@ -118,6 +139,9 @@ function KanbanBoard() {
 								column={activeColumn}
 								deleteColumn={deleteColumn}
 								updateColumn={updateColumn}
+								tasks={tasks.filter((task) => task.columnId === activeColumn.id)}
+								createTask={createTask}
+								deleteTask={deleteTask}
 							/>
 						)}
 					</DragOverlay>,
